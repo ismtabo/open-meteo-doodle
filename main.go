@@ -10,6 +10,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"runtime"
 	"time"
 
@@ -20,9 +21,6 @@ import (
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
-
-const APP_NAME = "open-meteo"
-const DEFAULT_TIMEZONE = "Europe/Madrid"
 
 type Config struct {
 	Timezone   string
@@ -35,6 +33,15 @@ type Location = time.Location
 func init() {
 	flag.String("file", "", "Output file")
 	flag.BoolP("verbose", "v", false, "Verbose mode")
+	flag.ErrHelp = nil
+	flag.Usage = usage
+}
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "%s [options]\n", os.Args[0])
+	fmt.Fprintln(os.Stderr, "Options:")
+	flag.PrintDefaults()
+	os.Exit(0)
 }
 
 func main() {
@@ -45,9 +52,12 @@ func main() {
 		log.Fatal("Error: failed unmarshaling config", err)
 	}
 	if !cfg.Verbose {
-		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelError,
+		}))
 		slog.SetDefault(logger)
 	}
+	log.Default().SetOutput(os.Stdout)
 	if cfg.OutputFile == "" {
 		log.Fatal("Error: missing output file option")
 	}
