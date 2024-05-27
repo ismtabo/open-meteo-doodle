@@ -2,22 +2,23 @@ package main
 
 import (
 	"bytes"
-	_ "embed"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"image"
 	"image/color"
+	"image/png"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"path"
 	"runtime"
+	"strings"
 	"time"
 
-	"golang.org/x/image/font"
-
 	"github.com/fogleman/gg"
-	"github.com/golang/freetype/truetype"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -172,7 +173,7 @@ func degreesToCardinal(degrees float64) string {
 }
 
 const SIZE = 300
-const UBUNTU_FONT_PATH = "/usr/share/fonts/truetype/ubuntu/Ubuntu-Th.ttf"
+const UBUNTU_FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 const TERMUX_FONT_PATH = "/data/data/com.termux/files/usr/share/fonts/TTF/DejaVuSans.ttf"
 
 var fonts = map[string]string{
@@ -180,52 +181,63 @@ var fonts = map[string]string{
 	"android": TERMUX_FONT_PATH,
 }
 
-const UBUNTU_EMOJI_FONT_PATH = "/home/cx02962/.cache/.fr-KwXqja/NotoEmoji-VariableFont_wght.ttf"
+//go:embed emojis/light/*.png
+var lightEmojis embed.FS
 
-//go:embed fonts/NotoEmoji-VariableFont_wght.ttf
-var emojiFontTTF []byte
+//go:embed emojis/dark/*.png
+var darkEmojis embed.FS
 
-func loadEmojiFont(points float64) (font.Face, error) {
-	f, err := truetype.Parse(emojiFontTTF)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing emoji font: %w", err)
+const UNKNOWN_EMOJI_FILE = "unknown.png"
+
+func getWMOEmojiImage(isLight bool, code int) (image.Image, error) {
+	folder := lightEmojis
+	folderName := "emojis/light"
+	if !isLight {
+		folder = darkEmojis
+		folderName = "emojis/dark"
 	}
-	face := truetype.NewFace(f, &truetype.Options{
-		Size: points,
-		// Hinting: font.HintingFull,
-	})
-	return face, nil
+	entries, err := folder.ReadDir(folderName)
+	if err != nil {
+		return nil, fmt.Errorf("error opening emojis folder: %w", err)
+	}
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), fmt.Sprintf("%d", code)) {
+			emojiFile := path.Join(folderName, entry.Name())
+			data, err := folder.Open(emojiFile)
+			if err != nil {
+				return nil, fmt.Errorf("error opening file '%s': %w", emojiFile, err)
+			}
+			img, err := png.Decode(data)
+			if err != nil {
+				return nil, fmt.Errorf("error opening png file '%s': %s", emojiFile, err)
+			}
+			return img, nil
+		}
+	}
+	emojiFile := path.Join(folderName, UNKNOWN_EMOJI_FILE)
+	data, err := folder.Open(emojiFile)
+	if err != nil {
+		return nil, fmt.Errorf("error opening file '%s': %w", emojiFile, err)
+	}
+	img, err := png.Decode(data)
+	if err != nil {
+		return nil, fmt.Errorf("error opening png file '%s': %s", emojiFile, err)
+	}
+	return img, nil
 }
 
-var wmoCodeToEmoji = map[int]string{
-	0:  "☀",  // Clear sky
-	1:  "🌤️", // Mainly clear
-	2:  "⛅",  // Partly cloudy
-	3:  "☁️", // Overcast
-	45: "🌫️", // Fog
-	48: "🌫️", // Depositing rime fog
-	51: "🌧️", // Drizzle: Light intensity
-	53: "🌧️", // Drizzle: Moderate intensity
-	55: "🌧️", // Drizzle: Dense intensity
-	56: "🌧️", // Freezing Drizzle: Light intensity
-	57: "🌧️", // Freezing Drizzle: Dense intensity
-	61: "🌧️", // Rain: Slight intensity
-	63: "🌧️", // Rain: Moderate intensity
-	65: "🌧️", // Rain: Heavy intensity
-	66: "🌧️", // Freezing Rain: Light intensity
-	67: "🌧️", // Freezing Rain: Heavy intensity
-	71: "❄️", // Snow fall: Slight intensity
-	73: "❄️", // Snow fall: Moderate intensity
-	75: "❄️", // Snow fall: Heavy intensity
-	77: "❄️", // Snow grains
-	80: "🌧️", // Rain showers: Slight intensity
-	81: "🌧️", // Rain showers: Moderate intensity
-	82: "🌧️", // Rain showers: Violent intensity
-	85: "❄️", // Snow showers: Slight intensity
-	86: "❄️", // Snow showers: Heavy intensity
-	95: "⛈️", // Thunderstorm: Slight or moderate
-	96: "⛈️", // Thunderstorm with slight hail
-	99: "⛈️", // Thunderstorm with heavy hail
+var gray20 = color.RGBA{
+	R: 51,
+	G: 51,
+	B: 51,
+	A: 255,
+}
+
+var gray80 = color.RGBA{
+	R: 204,
+	G: 204,
+	B: 204,
+	A: 255,
 }
 
 func drawImage(cfg Config, weatherData WeatherData) error {
@@ -234,20 +246,16 @@ func drawImage(cfg Config, weatherData WeatherData) error {
 	if !ok {
 		return fmt.Errorf("unknown platform %s", uname)
 	}
-	emojiFont, err := loadEmojiFont(150)
-	if err != nil {
-		return fmt.Errorf("error loading emoji font: %w", err)
-	}
 	w := SIZE
 	h := SIZE
 	dc := gg.NewContext(w, h)
-	fgColor := color.White
+	fgColor := gray80
 	if weatherData.IsDay {
-		fgColor = color.Gray16{0x1111}
+		fgColor = gray20
 	}
-	bgColor := color.Gray16{0x1111}
+	bgColor := gray20
 	if weatherData.IsDay {
-		bgColor = color.White
+		bgColor = gray80
 	}
 	fs := float64(h) * 0.10
 	dc.SetColor(bgColor)
@@ -263,8 +271,11 @@ func drawImage(cfg Config, weatherData WeatherData) error {
 	dc.DrawStringAnchored("Wind:", 10, 100, 0, 1)
 	dc.DrawStringAnchored(fmt.Sprintf("%g km/h", weatherData.WindSpeed), 290, 100, 1, 1)
 	dc.DrawStringAnchored(degreesToCardinal(weatherData.WindDirection), 290, 130, 1, 1)
-	dc.SetFontFace(emojiFont)
-	dc.DrawStringAnchored(wmoCodeToEmoji[weatherData.WeatherCode], 150, 150, 0.5, 0.75)
+	emoji, err := getWMOEmojiImage(weatherData.IsDay, weatherData.WeatherCode)
+	if err != nil {
+		return fmt.Errorf("error getting emoji for isDay=%t code=%d: %w", weatherData.IsDay, weatherData.WeatherCode, err)
+	}
+	dc.DrawImageAnchored(emoji, 150, 150, 0.5, 0.20)
 	smallFS := fs * 0.3
 	dc.LoadFontFace(fontPath, smallFS)
 	dc.DrawStringAnchored(weatherData.Time.Format(time.RFC3339), 290, 290, 1, 0)

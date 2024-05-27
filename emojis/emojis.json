@@ -1,0 +1,170 @@
+[
+	{
+		"code": 0,
+		"emoji": "☀",
+		"name": "Clear sky",
+		"file": "clear_sky.png"
+	},
+	{
+		"code": 1,
+		"emoji": "🌤️",
+		"name": "Mainly clear",
+		"file": "mainly_clear.png"
+	},
+	{
+		"code": 2,
+		"emoji": "⛅",
+		"name": "Partly cloudy",
+		"file": "partly_cloudy.png"
+	},
+	{
+		"code": 3,
+		"emoji": "☁️",
+		"name": "Overcast",
+		"file": "overcast.png"
+	},
+	{
+		"code": 45,
+		"emoji": "🌫️",
+		"name": "Fog",
+		"file": "fog.png"
+	},
+	{
+		"code": 48,
+		"emoji": "🌫️",
+		"name": "Depositing rime fog",
+		"file": "depositing_rime_fog.png"
+	},
+	{
+		"code": 51,
+		"emoji": "🌦",
+		"name": "Drizzle: Light intensity",
+		"file": "drizzle_light_intensity.png"
+	},
+	{
+		"code": 53,
+		"emoji": "🌦",
+		"name": "Drizzle: Moderate intensity",
+		"file": "drizzle_moderate_intensity.png"
+	},
+	{
+		"code": 55,
+		"emoji": "🌦",
+		"name": "Drizzle: Dense intensity",
+		"file": "drizzle_dense_intensity.png"
+	},
+	{
+		"code": 56,
+		"emoji": "🌨",
+		"name": "Freezing Drizzle: Light intensity",
+		"file": "freezing_drizzle_light_intensity.png"
+	},
+	{
+		"code": 57,
+		"emoji": "🌨",
+		"name": "Freezing Drizzle: Dense intensity",
+		"file": "freezing_drizzle_dense_intensity.png"
+	},
+	{
+		"code": 61,
+		"emoji": "🌧️",
+		"name": "Rain: Slight intensity",
+		"file": "rain_slight_intensity.png"
+	},
+	{
+		"code": 63,
+		"emoji": "🌧️",
+		"name": "Rain: Moderate intensity",
+		"file": "rain_moderate_intensity.png"
+	},
+	{
+		"code": 65,
+		"emoji": "🌧️",
+		"name": "Rain: Heavy intensity",
+		"file": "rain_heavy_intensity.png"
+	},
+	{
+		"code": 66,
+		"emoji": "🌨",
+		"name": "Freezing Rain: Light intensity",
+		"file": "freezing_rain_light_intensity.png"
+	},
+	{
+		"code": 67,
+		"emoji": "🌨",
+		"name": "Freezing Rain: Heavy intensity",
+		"file": "freezing_rain_heavy_intensity.png"
+	},
+	{
+		"code": 71,
+		"emoji": "🌨",
+		"name": "Snow fall: Slight intensity",
+		"file": "snow_fall_slight_intensity.png"
+	},
+	{
+		"code": 73,
+		"emoji": "🌨",
+		"name": "Snow fall: Moderate intensity",
+		"file": "snow_fall_moderate_intensity.png"
+	},
+	{
+		"code": 75,
+		"emoji": "🌨",
+		"name": "Snow fall: Heavy intensity",
+		"file": "snow_fall_heavy_intensity.png"
+	},
+	{
+		"code": 77,
+		"emoji": "❄️",
+		"name": "Snow grains",
+		"file": "snow_grains.png"
+	},
+	{
+		"code": 80,
+		"emoji": "🌧️",
+		"name": "Rain showers: Slight intensity",
+		"file": "rain_showers_slight_intensity.png"
+	},
+	{
+		"code": 81,
+		"emoji": "🌧️",
+		"name": "Rain showers: Moderate intensity",
+		"file": "rain_showers_moderate_intensity.png"
+	},
+	{
+		"code": 82,
+		"emoji": "🌧️",
+		"name": "Rain showers: Violent intensity",
+		"file": "rain_showers_violent_intensity.png"
+	},
+	{
+		"code": 85,
+		"emoji": "❄️",
+		"name": "Snow showers: Slight intensity",
+		"file": "snow_showers_slight_intensity.png"
+	},
+	{
+		"code": 86,
+		"emoji": "❄️",
+		"name": "Snow showers: Heavy intensity",
+		"file": "snow_showers_heavy_intensity.png"
+	},
+	{
+		"code": 95,
+		"emoji": "⛈️",
+		"name": "Thunderstorm: Slight or moderate",
+		"file": "thunderstorm_slight_or_moderate.png"
+	},
+	{
+		"code": 96,
+		"emoji": "🌩",
+		"name": "Thunderstorm with slight hail",
+		"file": "thunderstorm_with_slight_hail.png"
+	},
+	{
+		"code": 99,
+		"emoji": "⚡",
+		"name": "Thunderstorm with heavy hail",
+		"file": "thunderstorm_with_heavy_hail.png"
+	}
+]
