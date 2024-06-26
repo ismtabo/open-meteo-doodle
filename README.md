@@ -35,5 +35,6 @@ open-meteo-doodle --file <file>
 
 ## Acknowledgment
 
-- Open Meteo API: https://open-meteo.com/
 - Noto Emoji: https://fonts.google.com/noto/specimen/Noto+Emoji
+- Open Meteo API: https://open-meteo.com/
+- OpenStreetMap Nominatim: https://nominatim.openstreetmap.org/ui/about.html
