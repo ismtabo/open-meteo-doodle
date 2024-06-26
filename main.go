@@ -98,7 +98,16 @@ type WeatherData struct {
 	WindDirection            float64
 }
 
-const OPEN_WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=41.6552&longitude=-4.7237&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m&timezone=Europe%2FMadrid&forecast_days=1&forecast_hours=24"
+const VLL_LAT="41.6552"
+const VLL_LNG="-4.7237"
+
+const VGO_LAT="42.23282"
+const VGO_LNG="-8.72264"
+
+const LAT=VLL_LAT
+const LNG=VLL_LNG
+
+var OPEN_WEATHER_URL = fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m&timezone=Europe%%2FMadrid&forecast_days=1&forecast_hours=24", LAT, LNG)
 
 func retrieveOpenWeatherCurrentWeather() (WeatherData, error) {
 	req, err := http.Get(OPEN_WEATHER_URL)
