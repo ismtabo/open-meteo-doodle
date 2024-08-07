@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"log/slog"
-	"math"
 	"net/http"
 	"os"
 	"path"
@@ -20,6 +19,7 @@ import (
 	"time"
 
 	"github.com/fogleman/gg"
+	"github.com/golang/geo/s1"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -338,7 +338,8 @@ func drawImage(cfg Config, weatherData WeatherData, location LocationData) error
 	dc.DrawLine(-20, 0, -18, 0)
 	dc.DrawStringAnchored("S", 0, 24, 0.5, 1)
 	dc.DrawLine(0, 20, 0, 18)
-	dc.Rotate(weatherData.WindDirection/math.Pi)
+	windAngle := s1.Angle(weatherData.WindDirection) * s1.Degree
+	dc.Rotate(windAngle.Radians())
 	dc.DrawLine(0, -17.5, 0, 17.5)
 	dc.DrawLine(0, 17.5, 5, 12.5)
 	dc.DrawLine(0, 17.5, -5, 12.5)
