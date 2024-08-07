@@ -14,6 +14,7 @@ Information of the doodle:
 - Humidity
 - Probability of Precipitation
 - Wind speed and direction
+- Location city name
 
 ## Usage
 
