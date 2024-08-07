@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added multiple locations (Valladolid, Vigo, San Sebastián, Ferrol)
 - Added location label to image
+- Added compass with wind direction to image
 
 ## [1.0.1] - 2024-05-28
 
