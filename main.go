@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"log/slog"
+	"math"
 	"net/http"
 	"os"
 	"path"
@@ -337,10 +338,10 @@ func drawImage(cfg Config, weatherData WeatherData, location LocationData) error
 	dc.DrawLine(-20, 0, -18, 0)
 	dc.DrawStringAnchored("S", 0, 24, 0.5, 1)
 	dc.DrawLine(0, 20, 0, 18)
-	dc.Rotate(weatherData.WindDirection)
+	dc.Rotate(weatherData.WindDirection/math.Pi)
 	dc.DrawLine(0, -17.5, 0, 17.5)
-	dc.DrawLine(0, -17.5, 5, -12.5)
-	dc.DrawLine(0, -17.5, -5, -12.5)
+	dc.DrawLine(0, 17.5, 5, 12.5)
+	dc.DrawLine(0, 17.5, -5, 12.5)
 	dc.Stroke()
 	dc.Pop()
 	dc.DrawStringAnchored(string(location), 10, 290, 0, 0)
