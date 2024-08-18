@@ -105,6 +105,9 @@ type WeatherData struct {
 const VLL_LAT = "41.6552"
 const VLL_LNG = "-4.7237"
 
+const GJN_LAT = "43.5293102"
+const GJN_LNG = "-5.6773234"
+
 const VGO_LAT = "42.23282"
 const VGO_LNG = "-8.72264"
 
