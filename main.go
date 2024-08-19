@@ -25,13 +25,18 @@ import (
 )
 
 type Config struct {
+	Latitude   float64 `mapstructure:"latitude"`
+	Longitude  float64 `mapstructure:"longitude"`
+	OutputFile string  `mapstructure:"file"`
 	Verbose    bool
-	OutputFile string `mapstructure:"file"`
 }
 
-type Location = time.Location
+type TimeLocation = time.Location
 
 func init() {
+	flag.StringP("config", "c", "", "Config file")
+	flag.Float64("latitude", 0.0, "Latitude")
+	flag.Float64("longitude", 0.0, "Longitude")
 	flag.String("file", "", "Output file")
 	flag.BoolP("verbose", "v", false, "Verbose mode")
 	flag.ErrHelp = nil
@@ -47,7 +52,16 @@ func usage() {
 
 func main() {
 	flag.Parse()
-	viper.BindPFlags(flag.CommandLine)
+	if err := viper.BindPFlags(flag.CommandLine); err != nil {
+		log.Fatal("Error: failed binding flags", err)
+	}
+	configFilePath := viper.GetString("config")
+	if configFilePath != "" {
+		viper.SetConfigFile(configFilePath)
+		if err := viper.ReadInConfig(); err != nil {
+			log.Fatal("Error: failed reading file", err)
+		}
+	}
 	cfg := Config{}
 	if err := viper.Unmarshal(&cfg); err != nil {
 		log.Fatal("Error: failed un-marshaling config", err)
@@ -62,15 +76,19 @@ func main() {
 	if cfg.OutputFile == "" {
 		log.Fatal("Error: missing output file option")
 	}
-	weatherData, err := retrieveOpenWeatherCurrentWeather()
+	location := Location{
+		Latitude:  cfg.Latitude,
+		Longitude: cfg.Longitude,
+	}
+	weatherData, err := getOpenWeatherCurrentWeather(location)
 	if err != nil {
 		log.Fatal("Error: failed retrieving weather data", err)
 	}
-	location, err := retrieveLatLonReverseGeocode()
+	city, err := getLatitudeLongitudeCity(location)
 	if err != nil {
 		log.Fatal("Error: failed retrieving reverse geocode data", err)
 	}
-	if err := drawImage(cfg, weatherData, location); err != nil {
+	if err := drawImage(cfg, weatherData, city); err != nil {
 		log.Fatal("Error: failed writing image", err)
 	}
 }
@@ -102,28 +120,14 @@ type WeatherData struct {
 	WindDirection            float64
 }
 
-const VLL_LAT = "41.6552"
-const VLL_LNG = "-4.7237"
+type Location struct {
+	Latitude  float64
+	Longitude float64
+}
 
-const GJN_LAT = "43.5293102"
-const GJN_LNG = "-5.6773234"
-
-const VGO_LAT = "42.23282"
-const VGO_LNG = "-8.72264"
-
-const EAS_LAT = "43.32"
-const EAS_LNG = "-1.98"
-
-const LCG_LAT = "43.466667"
-const LCG_LNG = "-8.250000"
-
-const LAT = VLL_LAT
-const LNG = VLL_LNG
-
-var OPEN_WEATHER_URL = fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m&timezone=Europe%%2FMadrid&forecast_days=1&forecast_hours=24", LAT, LNG)
-
-func retrieveOpenWeatherCurrentWeather() (WeatherData, error) {
-	res, err := http.Get(OPEN_WEATHER_URL)
+func getOpenWeatherCurrentWeather(location Location) (WeatherData, error) {
+	openWeatherURL := fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m&timezone=Europe%%2FMadrid&forecast_days=1&forecast_hours=24", location.Latitude, location.Longitude)
+	res, err := http.Get(openWeatherURL)
 	if err != nil {
 		return WeatherData{}, fmt.Errorf("error requesting weather info: %w", err)
 	}
@@ -163,13 +167,12 @@ type NominatimReverseGeocodeData struct {
 	} `json:"address"`
 }
 
-type LocationData string
+type City string
 
-var REVERSE_GEOCODING_URL = fmt.Sprintf("https://nominatim.openstreetmap.org/reverse?format=json&lat=%s&lon=%s", LAT, LNG)
-
-func retrieveLatLonReverseGeocode() (LocationData, error) {
-	slog.Info("reverse geocode url", slog.String("url", REVERSE_GEOCODING_URL))
-	req, err := http.NewRequest(http.MethodGet, REVERSE_GEOCODING_URL, nil)
+func getLatitudeLongitudeCity(location Location) (City, error) {
+	reverseGeocodingURL := fmt.Sprintf("https://nominatim.openstreetmap.org/reverse?format=json&lat=%f&lon=%f", location.Latitude, location.Longitude)
+	slog.Info("reverse geocode url", slog.String("url", reverseGeocodingURL))
+	req, err := http.NewRequest(http.MethodGet, reverseGeocodingURL, nil)
 	if err != nil {
 		return "", fmt.Errorf("error creating reverse geocode request: %w", err)
 	}
@@ -184,7 +187,7 @@ func retrieveLatLonReverseGeocode() (LocationData, error) {
 	if err := json.NewDecoder(buff).Decode(&data); err != nil {
 		return "", fmt.Errorf("error decoding reverse geocode response: %w", err)
 	}
-	return LocationData(data.Address.City), nil
+	return City(data.Address.City), nil
 }
 
 func degreesToCardinal(degrees float64) string {
@@ -292,7 +295,7 @@ var gray80 = color.RGBA{
 	A: 255,
 }
 
-func drawImage(cfg Config, weatherData WeatherData, location LocationData) error {
+func drawImage(cfg Config, weatherData WeatherData, location City) error {
 	uname := runtime.GOOS
 	fontPath, ok := fonts[uname]
 	if !ok {
